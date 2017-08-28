@@ -99,3 +99,31 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+
+*.pyc
+*.conf
+*.cfg
+*.log
+env
+env3
+rtmbot
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+jenkins-bot.sublime-workspace
+
+.yml
+*/*.yml
+**/*.yml
+config/*.conf
+config/*.yml
+
+### macOS ###
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+
