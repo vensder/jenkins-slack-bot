@@ -1,0 +1,12 @@
+# Add the following to rtmbot.conf
+DEBUG: True # make this False in production
+
+SLACK_TOKEN: "xoxb-00000000000-AAAAAAAAAAAAAAAAAAAAAAAA"
+
+BASEPATH: "/usr/src/app"
+LOGFILE: "log/rtmbot.log"
+
+ACTIVE_PLUGINS:
+    - plugins.catch_all.CatchAllPlugin
+    - plugins.started.StartedPlugin
+    - plugins.base_plugin.BasePlugin

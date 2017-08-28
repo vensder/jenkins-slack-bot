@@ -1,0 +1,86 @@
+help:  #  in code should be: <@bot_id> or <@bot_id> help
+  answer: "Available commands (_put *'help'* or *'-h'* at the end of command for details_):"
+
+job 1: # any format like: job1, job_1, job 1, etc.
+  name: deploy-staging  #  job name in jenkins
+  triggers:  #  in code should be: <@bot_id> 
+    - deploy staging  #  @jb deploy staging front master api master home branch/fix
+    - staging deploy
+  help:  #  {@botname} will be replased with real bot name
+    answer: |
+      Deploy combinations of containers with custom *branches* or *tags* on *staging*
+      Example:
+      ```{@botname} deploy staging <repo1> <branch1> <repo2> <branch2>```
+      Repos and aliases:
+  parameters:  #  branches names in Jenkins and aliases for slack
+    MAIN_BRANCH: 
+      - main
+      - default
+    HOME_BRANCH: 
+      - home
+    WEBAPP_BRANCH:
+      - web
+      - webapp
+    MIDDLEWARE_BRANCH:
+      - middl
+      - middleware
+    API_BRANCH:
+      - api
+    ADMIN-PAGE_BRANCH:
+      - admin-page
+      - admin
+  channels:  #  run jenkins job from this channel only
+    - work-stream
+    - test-stream
+    - devops-stream
+  channels_private:  #  slack api methods for private channels don't work
+    - G0QMYQE1H  #  private
+  users:  #  who can run jenkins job from slack
+    - vensder
+    - user1
+
+
+job 2:
+  name: show-staging-containers
+  triggers:
+    - 'show staging containers'
+    - 'show containers staging'
+  help:
+    answer: |
+      Show containers tags and creation time on *staging*
+  channels:
+    - work-stream
+    - devops-stream
+  users:
+    - vensder
+    - qa1
+
+
+job 3:
+  name: BaseJob  # job name in jenkins
+  triggers:
+    - 'run BaseJob'  # in code should be: <@bot_id> 
+    - 'BaseJob run'
+  help:
+    answer: |
+      Just base job with parameters for testing :joystick:
+      Example:
+      ```{@botname} run BaseJob <param1> <value1> <param2> <value2>```
+      Parameters and aliases:
+  parameters:  #  default params for jenkins job
+    PARAM1:
+      - param1
+      - param1.1
+    PARAM2:
+      - param2
+    PARAM3:
+      - param3
+      - p3
+  channels:  # run jenkins job from this channel only
+    - work-stream
+    - prod-deploy
+    - devops-stream
+  users:  # who can run jenkins job from slack
+    - vensder
+    - devops1
+    - admin1

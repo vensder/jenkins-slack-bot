@@ -1,0 +1,27 @@
+help:
+  triggers:  # in code should be: <@bot_id> trigger
+    - help
+  answer: "I'm just Base Plugin"  
+
+job 1:
+  name: build-my-app  # job name in jenkins
+  channels:  # run jenkins job from this channel only
+    - app-stream
+    - app-build
+  users:  # who can run jenkins job from slack
+    - bob
+    - alice
+    - eve
+  triggers: 'build my app'  # in code should be: <@bot_id> 
+
+job 2:
+  name: show-staging-containers
+  channels:
+    - deploy-stream
+  users:
+    - bob
+    - alice
+    - ann
+  triggers:
+    - 'show staging containers'
+    - 'show containers staging'

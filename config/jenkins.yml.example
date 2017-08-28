@@ -1,0 +1,4 @@
+url: https://jenkins.example.com
+username: jenkins-api-user  # create restricted user for api access.
+password: 7777777700000000kkkkkkeeeeeennnnnn  # password or user api token
+token: 7777777700000000kkkkkkeeeeeennnnnn
