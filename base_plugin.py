@@ -8,10 +8,10 @@ import re
 class BasePlugin(Plugin):
 
     debug = True  # initial value; will be rewrite from global rtmbot config
-    users = {}  # {user_id1:username1, user_id2:username2,}
-    usernames = {}  # {username1:user_id1, username2:user_id2,}
+    users_ids = {}  # {user_id1:username1, user_id2:username2,}
+    user_names = {}  # {username1:user_id1, username2:user_id2,}
     channels = {}  # {channel_id:name,}
-    channelnames = {}  # {channelname: channel_id}
+    channel_names = {}  # {channelname: channel_id}
     bot_name_dict = {}  # {'user':'B234234', 'username': 'jb'}
     stream_bot_name = ''  # bot name for posting to slak in format: <@botname>
     plugins_count = 0
@@ -39,26 +39,26 @@ class BasePlugin(Plugin):
         self.jserver = None
 
     def print_stdout(self, text):
-        '''
+        """
         Print to stdout without buffering.
         Needed for stdout logs in docker containers.
         The same result with env var PYTHONUNBUFFERED=0
-        '''
+        """
         if BasePlugin.debug:
             # plugin_name = self.get_plugin_name()
             print("{}: {}".format(self.plugin_name, text), flush=True)
 
     def get_plugin_name(self):
-        '''
+        """
         Get self class name of current plugin.
-        Needed for gettting plugin config yaml file.
-        '''
+        Needed for getting plugin config yaml file.
+        """
         return type(self).__name__
 
     def get_bot_name_dict(self):
-        '''
+        """
         Return dict from user_id and username of this rtmbot in Slack.
-        '''
+        """
         if not BasePlugin.bot_name_dict:
             auth_test = self.slack_client.api_call("auth.test")
             if auth_test['ok']:
@@ -69,25 +69,25 @@ class BasePlugin(Plugin):
         return BasePlugin.bot_name_dict
 
     def get_username(self, user):
-        '''
+        """
         Add pairs to users dict: user_id, username.
-        Add pairs to usernames dict: username, user_id.
+        Add pairs to user_names dict: username, user_id.
         Return username.
-        '''
-        if user not in BasePlugin.users:
+        """
+        if user not in BasePlugin.users_ids:
             username = self.slack_client.api_call("users.info", user=user)['user']['name']
-            BasePlugin.users[user] = username
-            if username not in BasePlugin.usernames:
-                BasePlugin.usernames[username] = user
-        return BasePlugin.users[user]
+            BasePlugin.users_ids[user] = username
+            if username not in BasePlugin.user_names:
+                BasePlugin.user_names[username] = user
+        return BasePlugin.users_ids[user]
 
     def get_user(self, username):
-        '''
+        """
         Return user id by username from usernames dict.
-        '''
-        if username not in BasePlugin.usernames:
+        """
+        if username not in BasePlugin.user_names:
             pass  # TODO: get user_id by username
-        return BasePlugin.usernames[username]
+        return BasePlugin.user_names[username]
 
     def get_channelname(self, channel):  # TODO: this method needs refactoring
         print("CHANNELS INFO FOR CHANNEL:", channel, self.slack_client.api_call("channels.info", channel=channel))
@@ -106,21 +106,21 @@ class BasePlugin(Plugin):
                             channelname = group["name"]
                             BasePlugin.channels[channel] = channelname
             if channel.startswith('D'):
-                BasePlugin.channelnames[channelname] = channel
+                BasePlugin.channel_names[channelname] = channel
                 BasePlugin.channels[channel] = channel
                 self.slack_client.api_call("chat.postMessage", channel=channel, text="I'm not working in this channel")
 
         return BasePlugin.channels[channel]
 
     def get_channel(self, channelname):
-        if channelname not in BasePlugin.channelnames:
+        if channelname not in BasePlugin.channel_names:
             pass  # TODO: get channel id by channel name
-        return BasePlugin.channelnames[channelname]
+        return BasePlugin.channel_names[channelname]
 
     def get_work_channels(self):
-        '''
+        """
         Works channels from plugin config (where jobs can work)
-        '''
+        """
         for section in self.cfg:
             if 'job' in section:
                 for channel in self.cfg[section]["channels"]:
@@ -173,11 +173,11 @@ class BasePlugin(Plugin):
             self.info_message(channel, ts, output, user=user)
 
     def process_hello(self, data):
-        '''
+        """
         Get from rtmbot.conf log channel name and debug mode.
         Check if Plugin config file exists and load it from yaml.
         Write to logs slack channel starting info.
-        '''
+        """
         with open("config/rtmbot.conf", 'r') as yamlfile:  # not needed to check exists, bot doesn't work without it
             rtmbot_conf = yaml.load(yamlfile)
             if 'LOG_CHANNEL' in rtmbot_conf:
@@ -244,7 +244,7 @@ class BasePlugin(Plugin):
         return (channelname in self.cfg[job]["channels"])
 
     def check_user_perm(self, job, user):
-        username = BasePlugin.users[user]
+        username = BasePlugin.users_ids[user]
         print(username)
         print(username in self.cfg[job]["users"])
         return (username in self.cfg[job]["users"])
@@ -255,22 +255,22 @@ class BasePlugin(Plugin):
         except Exception as e:
             self.exception_out(e)
 
-    def build_job(self, name, username=None, channelname=None):
-        '''
+    def build_job(self, name, user_name=None, channel_name=None):
+        """
         Buil Jenkins Job without params in yaml config files (key-value pairs).
         But parameters can be in the Jenkins Job config (for ex., username and slack channel)
-        '''
+        """
         job_has_params = False
         try:
             for prop in self.jserver.get_job_info(name)['property']:
                 if 'parameterDefinitions' in prop:
                     job_has_params = True
             if job_has_params:
-                if username:
-                    if channelname:
-                        params = {"USER_NAME": username, "CHANNEL_NAME": channelname}
+                if user_name:
+                    if channel_name:
+                        params = {"USER_NAME": user_name, "CHANNEL_NAME": channel_name}
                     else:
-                        params = {"USER_NAME": username}
+                        params = {"USER_NAME": user_name}
                 else:
                     params = {"": ""}
                 self.build_params_job(name=name, params=params)
@@ -284,7 +284,7 @@ class BasePlugin(Plugin):
         # plugin_name = self.get_plugin_name()
         if all(key in data for key in ('user', 'text', 'channel', 'ts')):
             channel = data['channel']
-            channelname = self.get_channelname(channel)  # needed to run this method to collect names in dict
+            channel_name = self.get_channelname(channel)  # needed to run this method to collect names in dict
             text = str(data['text'])
             user = data['user']
             username = self.get_username(user)  # needed to run this method to collect names in dict
@@ -364,8 +364,8 @@ class BasePlugin(Plugin):
                                             # TODO: check job existance
                                             self.build_job(
                                                 self.cfg[section]["name"],
-                                                username=username,
-                                                channelname=channelname)
+                                                user_name=username,
+                                                channel_name=channel_name)
                                         else:
                                             pass  # TODO: does it needed to do something here?
                                     else:
