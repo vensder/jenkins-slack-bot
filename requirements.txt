@@ -4,7 +4,7 @@ packaging==16.8
 pbr==2.0.0
 pyparsing==2.1.10
 python-jenkins==0.4.14
-PyYAML==3.12
+PyYAML==5.1
 requests==2.20.0
 rtmbot==0.4.0
 six==1.10.0
