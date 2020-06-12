@@ -1,4 +1,5 @@
 from base_plugin import BasePlugin
 
 class TestPlugin(BasePlugin):
-    pass
+    def __init__(self):
+        pass
